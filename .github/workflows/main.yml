@@ -1,0 +1,36 @@
+name: Update earnings HTML daily
+
+on:
+  schedule:
+    - cron: "0 5 * * *"  # Run every day at 05:00 UTC
+  workflow_dispatch:      # Allow manual run
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run earnings script
+        run: |
+          python earnings_strategy.py
+
+      - name: Commit and push updated HTML
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Auto-update index.html" || echo "No changes to commit"
+          git push
